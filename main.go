@@ -4,15 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
+	"github.com/LuispeFigueroa/ellineup-api/handlers"
+	"github.com/LuispeFigueroa/ellineup-api/router"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
-
-var db *sql.DB
 
 func main() {
 	err := godotenv.Load()
@@ -28,7 +27,7 @@ func main() {
 		os.Getenv("DB_NAME"),
 	)
 
-	db, err = sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error conectando a la base de datos:", err)
 	}
@@ -39,14 +38,10 @@ func main() {
 
 	log.Println("Conectado a PostgreSQL")
 
-	r := gin.Default()
+	handlers.DB = db
 
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"message": "ElLineup API corriendo",
-		})
-	})
+	r := gin.Default()
+	router.Setup(r)
 
 	r.Run(":8080")
 }
