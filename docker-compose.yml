@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: ellineup-db
+    environment:
+      POSTGRES_USER: ellineup
+      POSTGRES_PASSWORD: ellineup123
+      POSTGRES_DB: ellineup
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
