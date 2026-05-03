@@ -10,7 +10,7 @@ import (
 
 // Get /divisiones/:id/equipos
 // Obtener todos los equipos de una division
-func GetEquipost(c *gin.Context) {
+func GetEquipos(c *gin.Context) {
 	divisionID := c.Param("id")
 
 	rows, err := DB.Query("SELECT id, division_id, nombre, logo_url FROM equipos WHERE division_id = $1", divisionID)
@@ -32,7 +32,7 @@ func GetEquipost(c *gin.Context) {
 
 // GET /equipos/:id
 // obtener un euqipo especifico por id
-func GetQuipo(c *gin.Context) {
+func GetEquipo(c *gin.Context) {
 	id := c.Param("id")
 	var e models.Equipo
 
@@ -50,8 +50,8 @@ func GetQuipo(c *gin.Context) {
 
 // POST /divisiones/:id/equipos
 // craer un nuevo equipo en una division
-func CreateEquipos(c *gin.Context) {
-	divisonID = c.Param("id")
+func CreateEquipo(c *gin.Context) {
+	divisionID := c.Param("id")
 	var e models.Equipo
 
 	if err := c.ShouldBindJSON(&e); err != nil {
@@ -61,7 +61,7 @@ func CreateEquipos(c *gin.Context) {
 	err := DB.QueryRow(
 		"INSERT INTO equipos (division_id, nombre, logo_url) VALUES ($1, $2, $3) RETURNING id",
 		divisionID, e.Nombre, e.LogoURL,
-	).SCAN(&e.ID)
+	).Scan(&e.ID)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -72,7 +72,7 @@ func CreateEquipos(c *gin.Context) {
 
 // PUT /equipos/id
 // MODIFICAR un equipo especifico
-func UpdateEquipos(c *gin.Context) {
+func UpdateEquipo(c *gin.Context) {
 	id := c.Param("id")
 	var e models.Equipo
 

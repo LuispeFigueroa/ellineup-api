@@ -55,7 +55,7 @@ func CreateDivision(c *gin.Context) {
 	}
 
 	err := DB.QueryRow(
-		"INSERT INTO divisiones (nombre, temporada) VALUES ($1, $2) RETURNIN id",
+		"INSERT INTO divisiones (nombre, temporada) VALUES ($1, $2) RETURNING id",
 		d.Nombre, d.Temporada,
 	).Scan(&d.ID)
 
@@ -77,7 +77,7 @@ func UpdateDivision(c *gin.Context) {
 	}
 
 	result, err := DB.Exec(
-		"UPDATE divisiones SET nombre=$1, temporada$=2 WHERE id=$3",
+		"UPDATE divisiones SET nombre=$1, temporada=$2 WHERE id=$3",
 		d.Nombre, d.Temporada, id,
 	)
 
