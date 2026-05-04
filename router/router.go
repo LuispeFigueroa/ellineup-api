@@ -20,4 +20,11 @@ func Setup(r *gin.Engine) {
 	r.PUT("/equipos/:id", handlers.UpdateEquipo)
 	r.DELETE("/equipos/:id", handlers.DeleteEquipo)
 
+	// Jugadores
+	r.GET("/equipos/:id/jugadores", handlers.GetJugadores)
+	r.GET("/jugadores/:id", handlers.GetJugador)
+	r.POST("/equipos/:id/jugadores", handlers.CreateJugador)
+	r.PUT("/jugadores/:id", handlers.UpdateJugador)
+	r.DELETE("/jugadores/:id", handlers.DeleteJugador)
+
 }
