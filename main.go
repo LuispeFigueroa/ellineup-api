@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/LuispeFigueroa/ellineup-api/handlers"
+	"github.com/LuispeFigueroa/ellineup-api/middleware"
 	"github.com/LuispeFigueroa/ellineup-api/router"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -41,6 +42,7 @@ func main() {
 	handlers.DB = db
 
 	r := gin.Default()
+	r.Use(middleware.CORS())
 	router.Setup(r)
 
 	r.Run(":8080")
