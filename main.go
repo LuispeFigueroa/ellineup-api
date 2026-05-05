@@ -43,6 +43,7 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.CORS())
+	r.Static("/uploads", "./uploads")
 	router.Setup(r)
 
 	r.Run(":8080")

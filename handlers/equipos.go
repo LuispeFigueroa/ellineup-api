@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
+	"path/filepath"
 
 	"github.com/LuispeFigueroa/ellineup-api/models"
 	"github.com/gin-gonic/gin"
@@ -114,4 +116,48 @@ func DeleteEquipo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNoContent, nil)
+}
+
+// POST /equipos/:id/imagen
+func UploadLogoEquipo(c *gin.Context) {
+	id := c.Param("id")
+
+	file, err := c.FormFile("imagen")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No se recibió ninguna imagen"})
+		return
+	}
+
+	// Validar que sea imagen
+	ext := filepath.Ext(file.Filename)
+	allowed := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
+	if !allowed[ext] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Solo se permiten imágenes jpg, png o webp"})
+		return
+	}
+
+	// definir tamano maximo
+	if file.Size > 1<<20 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "La imagen no puede superar 1MB"})
+		return
+	}
+
+	// Guardar archivo con nombre único
+	filename := fmt.Sprintf("%s%s", id, ext)
+	savePath := filepath.Join("uploads", filename)
+
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar la imagen"})
+		return
+	}
+
+	// Actualizar logo_url en la DB
+	logoURL := fmt.Sprintf("/uploads/%s", filename)
+	_, err = DB.Exec("UPDATE equipos SET logo_url=$1 WHERE id=$2", logoURL, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"logo_url": logoURL})
 }

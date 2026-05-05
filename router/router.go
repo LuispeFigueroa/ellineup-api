@@ -19,6 +19,7 @@ func Setup(r *gin.Engine) {
 	r.POST("/divisiones/:id/equipos", handlers.CreateEquipo)
 	r.PUT("/equipos/:id", handlers.UpdateEquipo)
 	r.DELETE("/equipos/:id", handlers.DeleteEquipo)
+	r.POST("/equipos/:id/imagen", handlers.UploadLogoEquipo)
 
 	// Jugadores
 	r.GET("/equipos/:id/jugadores", handlers.GetJugadores)
@@ -34,4 +35,5 @@ func Setup(r *gin.Engine) {
 	r.PUT("/partidos/:id", handlers.UpdatePartido)
 	r.DELETE("/partidos/:id", handlers.DeletePartido)
 	r.GET("/divisiones/:id/standings", handlers.GetStandings)
+
 }
