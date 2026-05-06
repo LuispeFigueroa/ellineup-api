@@ -14,8 +14,20 @@ import (
 // Obtener todos los equipos de una division
 func GetEquipos(c *gin.Context) {
 	divisionID := c.Param("id")
+	q := c.Query("q")
 
-	rows, err := DB.Query("SELECT id, division_id, nombre, logo_url FROM equipos WHERE division_id = $1", divisionID)
+	var rows *sql.Rows
+	var err error
+
+	if q != "" {
+		rows, err = DB.Query(
+			"SELECT id, division_id, nombre, logo_url FROM equipos WHERE division_id = $1 AND LOWER(nombre) LIKE LOWER($2)",
+			divisionID, "%"+q+"%")
+	} else {
+		rows, err = DB.Query(
+			"SELECT id, division_id, nombre, logo_url FROM equipos WHERE division_id = $1", divisionID)
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
