@@ -12,9 +12,21 @@ var DB *sql.DB
 
 // Get para obtener las divisiones /divisiones
 func GetDivisiones(c *gin.Context) {
-	rows, err := DB.Query("SELECT id, nombre, temporada FROM divisiones")
+	q := c.Query("q")
+
+	var rows *sql.Rows
+	var err error
+
+	if q != "" {
+		//si se hace una busqueda se seleccionan los que tengan un nombre parecido al que se esta buscando
+		rows, err = DB.Query("SELECT id, nombre, temporada FROM divisiones WHERE LOWER(nombre) LIKE LOWER($1)", "%"+q+"%")
+	} else {
+		//si no se busca nada se devuelven todas las divisiones
+		rows, err = DB.Query("SELECT id, nombre, temporada FROM divisiones")
+	}
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener todas las divisiones"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
