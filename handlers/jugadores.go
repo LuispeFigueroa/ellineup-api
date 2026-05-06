@@ -62,6 +62,16 @@ func CreateJugador(c *gin.Context) {
 		return
 	}
 
+	// Validaciones
+	if j.Nombre == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El nombre del jugador es requerido"})
+		return
+	}
+	if j.Numero < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El numero del jugador no puede ser negativo"})
+		return
+	}
+
 	err := DB.QueryRow(
 		"INSERT INTO jugadores (equipo_id, nombre, numero, posicion) VALUES ($1, $2, $3, $4) RETURNING id",
 		equipoID, j.Nombre, j.Numero, j.Posicion,
@@ -82,6 +92,16 @@ func UpdateJugador(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&j); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos no validos"})
+		return
+	}
+
+	// Validaciones
+	if j.Nombre == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El nombre del jugador es requerido"})
+		return
+	}
+	if j.Numero < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El numero del jugador no puede ser negativo"})
 		return
 	}
 

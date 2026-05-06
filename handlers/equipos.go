@@ -72,6 +72,12 @@ func CreateEquipo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos invalidos"})
 		return
 	}
+	//validacion de parametros
+	if e.Nombre == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El nombre del equipo es requerido"})
+		return
+	}
+
 	err := DB.QueryRow(
 		"INSERT INTO equipos (division_id, nombre, logo_url) VALUES ($1, $2, $3) RETURNING id",
 		divisionID, e.Nombre, e.LogoURL,
@@ -81,6 +87,7 @@ func CreateEquipo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusCreated, e)
 }
 
@@ -91,11 +98,18 @@ func UpdateEquipo(c *gin.Context) {
 	var e models.Equipo
 
 	if err := c.ShouldBindJSON(&e); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos no Validos"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos invalidos"})
 		return
 	}
+
+	// Validacion de parametros
+	if e.Nombre == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El nombre del equipo es requerido"})
+		return
+	}
+
 	result, err := DB.Exec(
-		"UPDATE equipos SET nombre= $1, logo_url=$2 WHERE id=$3",
+		"UPDATE equipos SET nombre=$1, logo_url=$2 WHERE id=$3",
 		e.Nombre, e.LogoURL, id,
 	)
 
@@ -103,6 +117,7 @@ func UpdateEquipo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Equipo no encontrado"})

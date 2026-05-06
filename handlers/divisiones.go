@@ -10,7 +10,7 @@ import (
 
 var DB *sql.DB
 
-// Get para obtener las divisiones /divisiones
+// GET /divisiones
 func GetDivisiones(c *gin.Context) {
 	q := c.Query("q")
 
@@ -18,10 +18,8 @@ func GetDivisiones(c *gin.Context) {
 	var err error
 
 	if q != "" {
-		//si se hace una busqueda se seleccionan los que tengan un nombre parecido al que se esta buscando
 		rows, err = DB.Query("SELECT id, nombre, temporada FROM divisiones WHERE LOWER(nombre) LIKE LOWER($1)", "%"+q+"%")
 	} else {
-		//si no se busca nada se devuelven todas las divisiones
 		rows, err = DB.Query("SELECT id, nombre, temporada FROM divisiones")
 	}
 
@@ -41,28 +39,41 @@ func GetDivisiones(c *gin.Context) {
 	c.JSON(http.StatusOK, divisiones)
 }
 
-// Get divisiones por id /divisiones/:id
+// GET /divisiones/:id
 func GetDivision(c *gin.Context) {
 	id := c.Param("id")
 	var d models.Division
 
-	err := DB.QueryRow("SELECT id,nombre, temporada FROM divisiones WHERE id = $1", id).
+	err := DB.QueryRow("SELECT id, nombre, temporada FROM divisiones WHERE id = $1", id).
 		Scan(&d.ID, &d.Nombre, &d.Temporada)
 
 	if err == sql.ErrNoRows {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Error al obtener la division"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Division no encontrada"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, d)
 }
 
-//POST para agregar una division /divisiones
-
+// POST /divisiones
 func CreateDivision(c *gin.Context) {
 	var d models.Division
 
 	if err := c.ShouldBindJSON(&d); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos nos validos"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos invalidos"})
+		return
+	}
+
+	// Validaciones
+	if d.Nombre == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El nombre de la division es requerido"})
+		return
+	}
+	if d.Temporada == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "La temporada es requerida"})
 		return
 	}
 
@@ -72,19 +83,30 @@ func CreateDivision(c *gin.Context) {
 	).Scan(&d.ID)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creando la division"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusCreated, d)
 }
 
-// PUT  para modificar una division especificia/divisiones/:id
+// PUT /divisiones/:id
 func UpdateDivision(c *gin.Context) {
 	id := c.Param("id")
 	var d models.Division
 
 	if err := c.ShouldBindJSON(&d); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos no validos"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos invalidos"})
+		return
+	}
+
+	// Validaciones
+	if d.Nombre == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El nombre de la division es requerido"})
+		return
+	}
+	if d.Temporada == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "La temporada es requerida"})
 		return
 	}
 
@@ -94,31 +116,34 @@ func UpdateDivision(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar la division"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No se encontro a la divisoin"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Division no encontrada"})
 		return
 	}
-	d.ID = 0
+
 	c.JSON(http.StatusOK, d)
 }
 
-// Delete de una division especifica /divisiones/:id
+// DELETE /divisiones/:id
 func DeleteDivision(c *gin.Context) {
 	id := c.Param("id")
 
 	result, err := DB.Exec("DELETE FROM divisiones WHERE id=$1", id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error al eliminar la division"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Division no encontrada"})
+		return
 	}
-	c.JSON(http.StatusNotFound, nil)
+
+	c.JSON(http.StatusNoContent, nil)
 }

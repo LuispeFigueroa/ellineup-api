@@ -52,7 +52,7 @@ func GetPartido(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No se encontro el partido"})
 		return
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"erro": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, p)
@@ -67,6 +67,20 @@ func CreatePartido(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos no validos"})
+		return
+	}
+
+	// Validaciones
+	if p.EquipoLocalID == 0 || p.EquipoVisitaID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ambos equipos son requeridos"})
+		return
+	}
+	if p.EquipoLocalID == p.EquipoVisitaID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El equipo local y visita no pueden ser el mismo"})
+		return
+	}
+	if p.CarrerasLocal < 0 || p.CarrerasVisita < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Las carreras no pueden ser negativas"})
 		return
 	}
 	if p.Estado == "" {
@@ -94,8 +108,22 @@ func UpdatePartido(c *gin.Context) {
 	id := c.Param("id")
 	var p models.Partido
 
-	if err := c.ShouldBindBodyWithJSON(&p); err != nil {
+	if err := c.ShouldBindJSON(&p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos no validos"})
+		return
+	}
+
+	// Validaciones
+	if p.EquipoLocalID == 0 || p.EquipoVisitaID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ambos equipos son requeridos"})
+		return
+	}
+	if p.EquipoLocalID == p.EquipoVisitaID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El equipo local y visita no pueden ser el mismo"})
+		return
+	}
+	if p.CarrerasLocal < 0 || p.CarrerasVisita < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Las carreras no pueden ser negativas"})
 		return
 	}
 
