@@ -7,6 +7,8 @@ Backend de ElLineup — plataforma para gestionar ligas de softball. Construido 
 ##  Links
 - **Frontend:** https://luispefigueroa.github.io/ellineup-client
 - **API en producción:** https://ellineup-api-production.up.railway.app
+    Agregar un endpoint para ver datos
+  - Ejemplo: https://ellineup-api-production.up.railway.app/divisiones
 
 ## Instrucciones para correr localmente
 
