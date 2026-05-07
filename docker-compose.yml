@@ -7,9 +7,23 @@ services:
       POSTGRES_PASSWORD: ellineup123
       POSTGRES_DB: ellineup
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: ellineup-api
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ellineup
+      DB_PASSWORD: ellineup123
+      DB_NAME: ellineup
+    depends_on:
+      - db
 
 volumes:
   pgdata:
