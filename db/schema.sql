@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS equipos (
     id          SERIAL PRIMARY KEY,
     division_id INT NOT NULL REFERENCES divisiones(id) ON DELETE CASCADE,
     nombre      VARCHAR(100) NOT NULL,
-    logo_url    VARCHAR(255)
+    logo_url    TEXT
 );
 --jugadores dentro de cada equipo
 CREATE TABLE IF NOT EXISTS jugadores (
