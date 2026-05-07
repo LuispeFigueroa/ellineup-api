@@ -12,11 +12,10 @@ Backend de ElLineup — plataforma para gestionar ligas de softball. Construido 
     Agregar un endpoint para ver datos
   - Ejemplo: https://ellineup-api-production.up.railway.app/divisiones
 
-## Instrucciones para correr localmente
+##  Correr localmente
 
 ### Requisitos
-- Go 1.21+
-- Docker y Docker Compose
+- [Docker](https://www.docker.com/get-started) y Docker Compose
 
 ### Pasos
 
@@ -26,31 +25,17 @@ git clone https://github.com/LuispeFigueroa/ellineup-api
 cd ellineup-api
 ```
 
-2. Crea el archivo `.env` en la raíz:
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=ellineup
-DB_PASSWORD=ellineup123
-DB_NAME=ellineup
-```
-
-3. Levanta la base de datos:
+2. Levanta todo con Docker:
 ```bash
-docker compose up -d
+docker compose up --build
 ```
 
-4. Aplica el schema:
+3. Aplica el schema en la base de datos:
 ```bash
-type db\schema.sql | docker exec -i ellineup-db psql -U ellineup -d ellineup
+docker exec -i ellineup-db psql -U ellineup -d ellineup < db/schema.sql
 ```
 
-5. Corre el servidor:
-```bash
-go run main.go
-```
-
-El servidor corre en `http://localhost:8080`.
+4. El servidor corre en `http://localhost:8080`
 
 ## 📡 Endpoints
 
