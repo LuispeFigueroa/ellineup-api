@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 
@@ -155,7 +157,6 @@ func UploadLogoEquipo(c *gin.Context) {
 		return
 	}
 
-	// Validar que sea imagen
 	ext := filepath.Ext(file.Filename)
 	allowed := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
 	if !allowed[ext] {
@@ -163,28 +164,39 @@ func UploadLogoEquipo(c *gin.Context) {
 		return
 	}
 
-	// definir tamano maximo
 	if file.Size > 1<<20 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "La imagen no puede superar 1MB"})
 		return
 	}
 
-	// Guardar archivo con nombre único
-	filename := fmt.Sprintf("%s%s", id, ext)
-	savePath := filepath.Join("uploads", filename)
+	// Leer el archivo y convertirlo a Base64
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al leer la imagen"})
+		return
+	}
+	defer src.Close()
 
-	if err := c.SaveUploadedFile(file, savePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar la imagen"})
+	data, err := io.ReadAll(src)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al procesar la imagen"})
 		return
 	}
 
-	// Actualizar logo_url en la DB
-	logoURL := fmt.Sprintf("/uploads/%s", filename)
-	_, err = DB.Exec("UPDATE equipos SET logo_url=$1 WHERE id=$2", logoURL, id)
+	mimeType := "image/jpeg"
+	if ext == ".png" {
+		mimeType = "image/png"
+	} else if ext == ".webp" {
+		mimeType = "image/webp"
+	}
+
+	base64Str := fmt.Sprintf("data:%s;base64,%s", mimeType, base64.StdEncoding.EncodeToString(data))
+
+	_, err = DB.Exec("UPDATE equipos SET logo_url=$1 WHERE id=$2", base64Str, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"logo_url": logoURL})
+	c.JSON(http.StatusOK, gin.H{"logo_url": base64Str})
 }
